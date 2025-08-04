@@ -6,12 +6,15 @@ import os
 def scrape_remoteok():
     url = "https://remoteok.io/remote-dev-jobs"
     headers = {"User-Agent": "Mozilla/5.0"}
-    r = requests.get(url, headers=headers)
-    if r.status_code != 200:
-        print(f"Failed to fetch jobs, status: {r.status_code}")
-        return
-    soup = BeautifulSoup(r.content, "html.parser")
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        print(f"Failed to fetch jobs: {response.status_code}")
+        return pd.DataFrame()
+
+    soup = BeautifulSoup(response.content, "html.parser")
     jobs = []
+
     for row in soup.find_all("tr", class_="job"):
         try:
             title = row.find("h2").text.strip()
@@ -24,13 +27,13 @@ def scrape_remoteok():
                 "tags": str(tags),
                 "url": link
             })
-        except:
+        except Exception:
             continue
 
-    os.makedirs("data", exist_ok=True)
-    df = pd.DataFrame(jobs)
-    df.to_csv("data/jobs.csv", index=False, encoding="utf-8")
-    print("Saved jobs.csv with", len(jobs), "jobs")
+    if not jobs:
+        return pd.DataFrame()
 
-if __name__ == "__main__":
-    scrape_remoteok()
+    df = pd.DataFrame(jobs)
+    os.makedirs("data", exist_ok=True)
+    df.to_csv("data/jobs.csv", index=False, encoding="utf-8")
+    return df

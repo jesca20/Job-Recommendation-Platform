@@ -9,3 +9,5 @@ spacy
 pdfplumber
 sentence-transformers
 plotly
+feedparser
+lxml

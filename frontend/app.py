@@ -2,13 +2,15 @@ import os
 from pathlib import Path
 import streamlit as st
 import pandas as pd
-
-from resume_parser.parse_resume import extract_text_from_pdf, extract_skills
+import sys
+from scraper.job_scraper import scrape_remoteok
+from ..resume_parser.parse_resume import extract_text_from_pdf, extract_skills
 from matcher.match_engine import match_jobs
 from analytics.analytics import render_analytics_dashboard
 from tracker.tracker import save_application, get_applications
 
 # Folders
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 os.makedirs("data/resumes", exist_ok=True)
 
 st.set_page_config(page_title="Job Recommendation System", layout="wide")
@@ -49,6 +51,15 @@ with tab1:
 with tab2:
     st.subheader("🎯 Top Job Matches")
 
+    # Add refresh jobs button
+    if st.button("🔄 Refresh Job Listings"):
+        with st.spinner("Fetching latest jobs from RemoteOK..."):
+            df = scrape_remoteok()
+            if not df.empty:
+                st.success(f"✅ Updated job list with {len(df)} jobs!")
+            else:
+                st.error("❌ Failed to fetch jobs. Try again later.")
+
     if 'resume_text' not in st.session_state:
         st.info("Please upload a resume in the first tab to view job matches.")
     else:
@@ -64,6 +75,7 @@ with tab2:
         else:
             st.success(f"🔎 Found {len(matched)} matching jobs!")
 
+            # Optional filter by company
             companies = matched['company'].unique().tolist()
             company_filter = st.selectbox("🔍 Filter by Company", ["All"] + companies)
 
@@ -85,7 +97,6 @@ with tab2:
                             save_application(row, status, row['score'])
                             st.success("Status updated!")
                     st.markdown("---")
-
 # ===== TAB 3: About =====
 with tab3:
     st.markdown("""
