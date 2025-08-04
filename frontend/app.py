@@ -1,16 +1,19 @@
+import sys
 import os
-from pathlib import Path
+
+# Add the parent directory (repo root) to sys.path so sibling folders can be imported
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import streamlit as st
 import pandas as pd
-import sys
+from pathlib import Path
 from scraper.job_scraper import scrape_remoteok
-from ..resume_parser.parse_resume import extract_text_from_pdf, extract_skills
+from resume_parser.parse_resume import extract_text_from_pdf, extract_skills
 from matcher.match_engine import match_jobs
 from analytics.analytics import render_analytics_dashboard
 from tracker.tracker import save_application, get_applications
 
-# Folders
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 os.makedirs("data/resumes", exist_ok=True)
 
 st.set_page_config(page_title="Job Recommendation System", layout="wide")
