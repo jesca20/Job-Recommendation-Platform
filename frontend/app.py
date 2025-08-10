@@ -12,7 +12,25 @@ from resume_parser.parse_resume import extract_text_from_pdf, extract_skills
 from matcher.match_engine import match_jobs
 from analytics.analytics import render_analytics_dashboard
 from tracker.tracker import save_application, get_applications
+from auth import init_db, signup_ui, login_ui, logout_ui
 
+init_db()
+
+# Session state for login
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+if not st.session_state["authenticated"]:
+    auth_mode = st.sidebar.radio("Authentication", ["Login", "Sign Up"])
+    if auth_mode == "Login":
+        login_ui()
+    else:
+        signup_ui()
+    st.stop()  # Prevents loading rest of the app for unauthenticated users
+
+# Show logout on sidebar
+st.sidebar.write(f"👤 Logged in as: {st.session_state['username']}")
+logout_ui()
 
 os.makedirs("data/resumes", exist_ok=True)
 
